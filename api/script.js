@@ -1,14 +1,32 @@
 export default async function handler(req, res) {
+    const ua = req.headers["user-agent"] || "";
 
-    const ua = req.headers["user-agent"] || ""
+    // Allow only Roblox HttpService
+    const isRoblox = ua.includes("RobloxGameCloud") || ua.includes("Roblox");
 
-    if (ua.includes("Mozilla")) {
-        return res.status(403).send("Access Denied")
+    // Block browsers and common tools
+    if (!isRoblox) {
+        return res.status(403).send("Access Denied");
     }
 
-    const response = await fetch("https://raw.githubusercontent.com/kenzyqril-code/FTF-Script-By-Zyqril-/refs/heads/main/FTF%20Official%20Script")
-    const text = await response.text()
+    try {
+        const scriptUrl = "https://raw.githubusercontent.com/kenzyqril-code/Wolf-Or-Other-Script-By-Zyqril-/refs/heads/main/Wolf%20Or%20Other%20Official%20Script";
 
-    res.setHeader("Content-Type", "text/plain")
-    res.status(200).send(text)
+        const response = await fetch(scriptUrl);
+
+        if (!response.ok) {
+            return res.status(500).send("-- Script failed to load");
+        }
+
+        const script = await response.text();
+
+        // Important headers for Roblox
+        res.setHeader("Content-Type", "text/plain");
+        res.setHeader("Cache-Control", "no-store, no-cache");
+        res.setHeader("Pragma", "no-cache");
+
+        res.status(200).send(script);
+    } catch (error) {
+        res.status(500).send("-- Internal Server Error");
+    }
 }
